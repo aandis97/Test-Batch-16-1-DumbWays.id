@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+    <?php
+        include('koneksi.php');
+
+        if(isset($_POST['aksi'])){
+            $aksi = $_POST['aksi'];
+            $kategori = $_POST['kategori'];
+            $id = $_POST['id'];
+            
+            if($aksi=="tambah"){
+                $sql = "INSERT INTO categories (name)
+                VALUES ('$kategori')";
+
+                if ($conn->query($sql) === TRUE) {
+                    header("Location: kategori.php");
+                } else {
+                    echo "Error: " . $sql . "<br>" . $conn->error;
+                }
+            } else if($aksi=="ubah"){
+                $sql = "UPDATE categories SET name='$kategori' where id=$id";
+
+                if ($conn->query($sql) === TRUE) {
+                    header("Location: kategori.php");
+                } else {
+                    echo "Error: " . $sql . "<br>" . $conn->error;
+                }
+            }
+            
+        }
+
+        if(isset($_GET['hapus'])){
+            $id = $_GET['hapus']; 
+             
+            $sql = "DELETE FROM categories WHERE id=$id";
+
+            if ($conn->query($sql) === TRUE) {
+                header("Location: kategori.php");
+            } else {
+                echo "Error: " . $sql . "<br>" . $conn->error;
+            }
+        
+            
+        }
+    ?>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">Warteg Andi</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02"
+                    aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+                    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Beranda <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Data Kategori</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="makanan.php">Data Makanan</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+        </div>
+
+    </div>
+    <div class="container">
+        <br>
+        <?php
+            if(isset($_GET['a'])){
+                $aksi = $_GET['a'];
+
+                if($aksi=='tambah' || $aksi=='ubah') {
+                    $id=0;
+                    if(isset($_GET['id'])){
+                        $id = $_GET['id'];
+                        $sqlSelect = "SELECT name FROM categories where id=$id";
+                        $resultSelect = mysqli_query($conn, $sqlSelect);
+                        $kategori = mysqli_fetch_assoc($resultSelect); 
+                    }                
+                ?>
+                <br>           
+                <form class="border" method="POST" action="kategori.php" style="padding:20px">
+                    
+                    <input type="hidden" name="aksi" value="<?= $id!=0 ? 'ubah' : 'tambah' ?>">
+                    <input type="hidden" name="id" value="<?= $id!=0 ? $id : '0' ?>">
+                    <div class="form-group row">
+                        
+                    <div class="col-sm-10">
+                       <h5> Form <?= $id!=0 ? 'Ubah' : 'Tambah' ?> Kategori </h5>
+                    </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputKategori3" class="col-sm-2 col-form-label">Kategori</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="inputKategori3" name="kategori" value="<?= $id!=0 ? $kategori['name'] : '' ?>"  placeholder="Nama Kategori">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2">
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <a href="kategori.php" class="btn btn">Batal</a>
+                        </div>
+                    </div>
+                </form>
+
+                <?php
+                }else  {
+                    echo '<a href="kategori.php?a=tambah" class="btn btn-primary">Tambah</a>';
+                }
+            } else {
+                echo '<a href="kategori.php?a=tambah" class="btn btn-primary">Tambah</a>';
+            }
+
+
+        ?>
+        <br>
+        <br>
+        <?php  
+            $sql = "SELECT * FROM categories";
+            $result = $conn->query($sql);
+            if ($result->num_rows > 0) { 
+ 
+        ?> 
+
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nama Kategori Makanan</th>
+                    <th scope="col" class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                        $no=1;
+                        while($row = $result->fetch_assoc()) {
+                    ?>
+                    <tr>
+                    <th scope="row"><?= $no++ ?></th>
+                    <td><?= $row['name'] ?></td> 
+                    <td class="text-center">
+                    <a href="kategori.php?a=ubah&id=<?= $row['id'] ?>" class="btn btn-info btn-sm">Ubah</a> |
+                    <a href="kategori.php?hapus=<?= $row['id'] ?>" onclick="return confirm('Yakin mau hapus data ini?');" class="btn btn-danger btn-sm">Hapus</a> 
+                    </td> 
+                    </tr> 
+                    <?php
+                        }
+                    ?>
+                </tbody>
+            </table>
+
+
+        <?php 
+    
+} else {
+    echo '<h1 class="display-5 text-center">Data Kategori Kosong</h1>';
+}
+        ?>
+    </div>
+
+</body>
+
+</html>
